@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.practica.integracion.DAO"},{"l":"com.practica.integracion.manager"}];updateSearchResults();
