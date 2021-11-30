@@ -95,17 +95,7 @@ public class TestValidUser {
 		testStopRemoteSystem(remoteid, numElem);
 	}
 
-	@Test
-	public void testAddRemoteSystem() throws SystemManagerException, OperationNotSupportedException {
-		when(auth.getAuthData(usuarioValido.getId())).thenReturn(usuarioValido);
-		HashMap<Integer, String> permisos= new HashMap<>();
-		permisos.put(553, "1Ix3xXOjTTXPvNh7usEU4tamQnmW38qsWrZtUnAUyqJw");
-		manager.addRemoteSystem(usuarioValido.getId(), permisos);
-		
-		when(auth.getAuthData(usuarioValido.getId())).thenReturn(usuarioValido);
-		when(generic.updateSomeData(usuarioValido, permisos)).thenReturn(true);
-		
-	}
+
 	
 	//metodos para evitar la repeticion de codigo. Todavia se pueden parametrizar para que solo haya uno.
 	public void testStartRemoteSystem(String remoteid, int numElem)
