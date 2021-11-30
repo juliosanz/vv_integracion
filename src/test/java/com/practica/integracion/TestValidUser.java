@@ -2,25 +2,27 @@ package com.practica.integracion;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
+
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 
 import javax.naming.OperationNotSupportedException;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InOrder;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.practica.integracion.DAO.AuthDAO;
@@ -39,8 +41,9 @@ public class TestValidUser {
 	private static User usuarioValido;
 	private static SystemManager manager;
 
-	@BeforeAll
-	static void setUp() {
+	
+	@BeforeEach
+	 void init() {
 		usuarioValido = new User("userid23", "Guts", "Griffith", "Av. Castellana 95 4ºA Madrid, Spain",
 				new LinkedList<Object>());
 		auth = mock(AuthDAO.class);
@@ -95,7 +98,7 @@ public class TestValidUser {
 		testStopRemoteSystem(remoteid, numElem);
 	}
 
-	@Test
+	/*@Test // No entiendo XD
 	public void testAddRemoteSystem() throws SystemManagerException, OperationNotSupportedException {
 		when(auth.getAuthData(usuarioValido.getId())).thenReturn(usuarioValido);
 		HashMap<Integer, String> permisos= new HashMap<>();
@@ -105,6 +108,16 @@ public class TestValidUser {
 		when(auth.getAuthData(usuarioValido.getId())).thenReturn(usuarioValido);
 		when(generic.updateSomeData(usuarioValido, permisos)).thenReturn(true);
 		
+	}*/
+	
+	@Test
+	public void testDeleteRemoteSystem( ) throws OperationNotSupportedException, SystemManagerException {
+		String remoteid = "remote123";
+
+		when(generic.deleteSomeData(Mockito.any(User.class), Mockito.anyString())).thenReturn(true);
+		manager.deleteRemoteSystem(usuarioValido.getId(), remoteid);
+		verify(generic, times(1)).deleteSomeData(Mockito.any(User.class), Mockito.anyString());//se necesitan que ambos esten a any porque si no no se puede usar investigar mas
+
 	}
 	
 	//metodos para evitar la repeticion de codigo. Todavia se pueden parametrizar para que solo haya uno.
