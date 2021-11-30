@@ -41,7 +41,7 @@ public class TestValidUser {
 	private static User usuarioValido;
 	private static SystemManager manager;
 
-	
+
 	@BeforeEach
 	 void init() {
 		usuarioValido = new User("userid23", "Guts", "Griffith", "Av. Castellana 95 4ºA Madrid, Spain",
@@ -98,18 +98,19 @@ public class TestValidUser {
 		testStopRemoteSystem(remoteid, numElem);
 	}
 
+
 	/*@Test // No entiendo XD
 	public void testAddRemoteSystem() throws SystemManagerException, OperationNotSupportedException {
 		when(auth.getAuthData(usuarioValido.getId())).thenReturn(usuarioValido);
 		HashMap<Integer, String> permisos= new HashMap<>();
 		permisos.put(553, "1Ix3xXOjTTXPvNh7usEU4tamQnmW38qsWrZtUnAUyqJw");
 		manager.addRemoteSystem(usuarioValido.getId(), permisos);
-		
+
 		when(auth.getAuthData(usuarioValido.getId())).thenReturn(usuarioValido);
 		when(generic.updateSomeData(usuarioValido, permisos)).thenReturn(true);
-		
+
 	}*/
-	
+
 	@Test
 	public void testDeleteRemoteSystem( ) throws OperationNotSupportedException, SystemManagerException {
 		String remoteid = "remote123";
@@ -119,7 +120,8 @@ public class TestValidUser {
 		verify(generic, times(1)).deleteSomeData(Mockito.any(User.class), Mockito.anyString());//se necesitan que ambos esten a any porque si no no se puede usar investigar mas
 
 	}
-	
+
+
 	//metodos para evitar la repeticion de codigo. Todavia se pueden parametrizar para que solo haya uno.
 	public void testStartRemoteSystem(String remoteid, int numElem)
 			throws OperationNotSupportedException, SystemManagerException {
