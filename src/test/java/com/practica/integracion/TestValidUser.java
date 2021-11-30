@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 
@@ -48,59 +49,79 @@ public class TestValidUser {
 
 	}
 
+	/*
+	 * Probamos startRemote con un remoteId que existe Comprobamos : - que devuelve
+	 * la collection esperada. - que se ejecutan una vez auth data y otra
+	 * getsomedata -que se ejecuta primero auth data y luego getsomedata cuando
+	 * llamamos a startremote
+	 */
 	@Test
 	public void startRemoteTest() throws OperationNotSupportedException, SystemManagerException {
-		Collection<Object> filtereddataList = new LinkedList<Object>();
-		//lista que representa una sublista de la BBDD que corresponde a los criterios de busqueda
-		filtereddataList.add("objeto1");
-		filtereddataList.add("objeto2");
 
 		String remoteid = "remote123";
-		when(auth.getAuthData(usuarioValido.getId())).thenReturn(usuarioValido);
-		when(generic.getSomeData(usuarioValido, "where id=" + remoteid)).thenReturn(filtereddataList);
+		int numElem = 2; // numero de elementos de la sublista de la BBDD que corresponde a los criterios
+							// de busqueda
 
-		InOrder ordered = inOrder(auth, generic);
-
-		// Probamos startRemote con un remoteId que existe
-		Collection<Object> resultStartRemote;
-		resultStartRemote = manager.startRemoteSystem(usuarioValido.getId(), remoteid);
-		/*
-		 * Comprobamos : - que devuelve la collection esperada. - que se ejecuta una vez
-		 * auth data y otra getsomedata
-		 * 
-		 */
-		assertEquals(filtereddataList, resultStartRemote);
-		verify(auth, times(1)).getAuthData(usuarioValido.getId());
-		verify(generic, times(1)).getSomeData(usuarioValido, "where id=" + remoteid);
-
-		/*
-		 * Comprobamos: -que se ejecuta primero auth data y luego getsomedata cuando
-		 * llamamos a startremote
-		 */
-
-		ordered.verify(auth).getAuthData(usuarioValido.getId());
-		ordered.verify(generic).getSomeData(usuarioValido, "where id=" + remoteid);
+		testStartRemoteSystem(remoteid, numElem);
 
 	}
 
+	/*
+	 * Probamos startRemote con un remoteId null. Al no encontrar el remote id
+	 * devuelve TODOS los elementos de la BBDD
+	 */
 	@Test
 	public void startRemoteTestFiltroNull() throws OperationNotSupportedException, SystemManagerException {
-		/*
-		 * interpretamos que si el filtro es null, devolvemos todos los datos
-		 */
-		Collection<Object> dataList = new LinkedList<Object>();// lista que representa la BBDD entera
-		for (int i = 0; i < 5; i++) {
+
+		String remoteid = "null";
+		int numElem = 5;// numero de elementos de la lista que representa la BBDD entera
+		testStartRemoteSystem(remoteid, numElem);
+	}
+
+	@Test
+	public void stopRemoteTest() throws OperationNotSupportedException, SystemManagerException {
+		String remoteid = "remote123";
+		int numElem = 2; // numero de elementos de la sublista de la BBDD que corresponde a los criterios
+							// de busqueda
+
+		testStopRemoteSystem(remoteid, numElem);
+	}
+
+	@Test
+	public void stopRemoteTestFiltroNull() throws OperationNotSupportedException, SystemManagerException {
+
+		String remoteid = "null";
+		int numElem = 5;// numero de elementos de la lista que representa la BBDD entera
+		testStopRemoteSystem(remoteid, numElem);
+	}
+
+	@Test
+	public void testAddRemoteSystem() throws SystemManagerException, OperationNotSupportedException {
+		when(auth.getAuthData(usuarioValido.getId())).thenReturn(usuarioValido);
+		HashMap<Integer, String> permisos= new HashMap<>();
+		permisos.put(553, "1Ix3xXOjTTXPvNh7usEU4tamQnmW38qsWrZtUnAUyqJw");
+		manager.addRemoteSystem(usuarioValido.getId(), permisos);
+		
+		when(auth.getAuthData(usuarioValido.getId())).thenReturn(usuarioValido);
+		when(generic.updateSomeData(usuarioValido, permisos)).thenReturn(true);
+		
+	}
+	
+	//metodos para evitar la repeticion de codigo. Todavia se pueden parametrizar para que solo haya uno.
+	public void testStartRemoteSystem(String remoteid, int numElem)
+			throws OperationNotSupportedException, SystemManagerException {
+
+		Collection<Object> dataList = new LinkedList<Object>();
+		for (int i = 0; i < numElem; i++) {
 			dataList.add("objeto" + i);
 
 		}
-		String remoteid = "null";
+
 		when(auth.getAuthData(usuarioValido.getId())).thenReturn(usuarioValido);
 		when(generic.getSomeData(usuarioValido, "where id=" + remoteid)).thenReturn(dataList);
 
 		InOrder ordered = inOrder(auth, generic);
 
-		// Probamos startRemote con un remoteId null. Al no encontrar el remote id
-		// devuelve TODOS los elementos de la BBDD
 		Collection<Object> resultStartRemote;
 		resultStartRemote = manager.startRemoteSystem(usuarioValido.getId(), remoteid);
 
@@ -111,7 +132,30 @@ public class TestValidUser {
 		ordered.verify(auth).getAuthData(usuarioValido.getId());
 		ordered.verify(generic).getSomeData(usuarioValido, "where id=" + remoteid);
 	}
-	
-	
+
+	public void testStopRemoteSystem(String remoteid, int numElem)
+			throws OperationNotSupportedException, SystemManagerException {
+
+		Collection<Object> dataList = new LinkedList<Object>();
+		for (int i = 0; i < numElem; i++) {
+			dataList.add("objeto" + i);
+
+		}
+
+		when(auth.getAuthData(usuarioValido.getId())).thenReturn(usuarioValido);
+		when(generic.getSomeData(usuarioValido, "where id=" + remoteid)).thenReturn(dataList);
+
+		InOrder ordered = inOrder(auth, generic);
+
+		Collection<Object> resultStartRemote;
+		resultStartRemote = manager.stopRemoteSystem(usuarioValido.getId(), remoteid);
+
+		assertEquals(dataList, resultStartRemote);
+		verify(auth, times(1)).getAuthData(usuarioValido.getId());
+		verify(generic, times(1)).getSomeData(usuarioValido, "where id=" + remoteid);
+
+		ordered.verify(auth).getAuthData(usuarioValido.getId());
+		ordered.verify(generic).getSomeData(usuarioValido, "where id=" + remoteid);
+	}
 
 }
