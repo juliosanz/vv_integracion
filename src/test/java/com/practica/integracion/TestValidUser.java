@@ -1,6 +1,7 @@
 package com.practica.integracion;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -117,6 +118,19 @@ public class TestValidUser {
 
 		when(generic.deleteSomeData(Mockito.any(User.class), Mockito.anyString())).thenReturn(true);
 		manager.deleteRemoteSystem(usuarioValido.getId(), remoteid);
+		verify(generic, times(1)).deleteSomeData(Mockito.any(User.class), Mockito.anyString());//se necesitan que ambos esten a any porque si no no se puede usar investigar mas
+
+	}
+	
+	@Test
+	public void testDeleteRemoteSystemFallaElBorrado( ) throws OperationNotSupportedException, SystemManagerException {
+		String remoteid = "remote123";
+
+		when(generic.deleteSomeData(Mockito.any(User.class), Mockito.anyString())).thenReturn(false);
+		
+		assertThrows(SystemManagerException.class, () -> {
+			manager.deleteRemoteSystem(usuarioValido.getId(), remoteid);});
+		
 		verify(generic, times(1)).deleteSomeData(Mockito.any(User.class), Mockito.anyString());//se necesitan que ambos esten a any porque si no no se puede usar investigar mas
 
 	}
