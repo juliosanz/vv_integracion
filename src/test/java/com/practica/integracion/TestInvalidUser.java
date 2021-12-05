@@ -18,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.practica.integracion.DAO.AuthDAO;
@@ -105,12 +106,11 @@ public class TestInvalidUser {
 	public void deleteRemoteSystemTest() throws OperationNotSupportedException
 	{
 		String remoteId = "016";
-		lenient().when(genericDao.deleteSomeData(userSinPermisos, remoteId)).thenThrow(new OperationNotSupportedException());
 		
+		lenient().when(genericDao.deleteSomeData(Mockito.any(User.class), Mockito.anyString())).thenThrow(new OperationNotSupportedException());
 		assertThrows(SystemManagerException.class, () -> { sys.deleteRemoteSystem(userSinPermisos.getId(), remoteId);});
 		
-		lenient().when(genericDao.deleteSomeData(userConPermisos, remoteId)).thenReturn(false);
-		
+		lenient().when(genericDao.deleteSomeData(Mockito.any(User.class), Mockito.anyString())).thenReturn(false);
 		assertThrows(SystemManagerException.class, () -> { sys.deleteRemoteSystem(userConPermisos.getId(), remoteId);});
 	}
 }
