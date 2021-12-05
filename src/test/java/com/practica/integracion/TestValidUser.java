@@ -7,22 +7,17 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.any;
 
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedList;
 
 import javax.naming.OperationNotSupportedException;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InOrder;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -100,17 +95,44 @@ public class TestValidUser {
 	}
 
 
-	/*@Test // No entiendo XD
+	@Test
+	public void testAddRemoteSystemFallaElUpdate() throws SystemManagerException, OperationNotSupportedException {
+		String remote = "Marmota";
+		when(auth.getAuthData(usuarioValido.getId())).thenReturn(usuarioValido);
+		when(generic.updateSomeData(usuarioValido, remote)).thenReturn(false);
+
+
+		InOrder ordered = inOrder(auth, generic);
+		
+		SystemManagerException fallo = assertThrows(SystemManagerException.class, () -> {
+			manager.addRemoteSystem(usuarioValido.getId(), remote);});
+		assertEquals("cannot add remote", fallo.getMessage());
+		
+		verify(auth, times(1)).getAuthData(usuarioValido.getId());
+		verify(generic, times(1)).updateSomeData(usuarioValido, remote);
+
+		ordered.verify(auth).getAuthData(usuarioValido.getId());
+		ordered.verify(generic).updateSomeData(usuarioValido, remote);
+		
+
+	}
+	
+	@Test
 	public void testAddRemoteSystem() throws SystemManagerException, OperationNotSupportedException {
+		String remote = "Marmota";
 		when(auth.getAuthData(usuarioValido.getId())).thenReturn(usuarioValido);
-		HashMap<Integer, String> permisos= new HashMap<>();
-		permisos.put(553, "1Ix3xXOjTTXPvNh7usEU4tamQnmW38qsWrZtUnAUyqJw");
-		manager.addRemoteSystem(usuarioValido.getId(), permisos);
+		when(generic.updateSomeData(usuarioValido, remote)).thenReturn(true);
 
-		when(auth.getAuthData(usuarioValido.getId())).thenReturn(usuarioValido);
-		when(generic.updateSomeData(usuarioValido, permisos)).thenReturn(true);
+		InOrder ordered = inOrder(auth, generic);
+		
+		manager.addRemoteSystem(usuarioValido.getId(), remote);
+		
+		verify(auth, times(1)).getAuthData(usuarioValido.getId());
+		verify(generic, times(1)).updateSomeData(usuarioValido, remote);
 
-	}*/
+		ordered.verify(auth).getAuthData(usuarioValido.getId());
+		ordered.verify(generic).updateSomeData(usuarioValido, remote);
+	}
 
 	@Test
 	public void testDeleteRemoteSystem( ) throws OperationNotSupportedException, SystemManagerException {
@@ -128,8 +150,10 @@ public class TestValidUser {
 
 		when(generic.deleteSomeData(Mockito.any(User.class), Mockito.anyString())).thenReturn(false);
 		
-		assertThrows(SystemManagerException.class, () -> {
+		SystemManagerException error = assertThrows(SystemManagerException.class, () -> {
 			manager.deleteRemoteSystem(usuarioValido.getId(), remoteid);});
+		
+		assertEquals("cannot delete remote: does remote exists?", error.getMessage());
 		
 		verify(generic, times(1)).deleteSomeData(Mockito.any(User.class), Mockito.anyString());//se necesitan que ambos esten a any porque si no no se puede usar investigar mas
 
