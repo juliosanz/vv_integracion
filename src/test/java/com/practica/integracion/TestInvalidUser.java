@@ -29,18 +29,17 @@ import com.practica.integracion.manager.SystemManagerException;
 @ExtendWith(MockitoExtension.class)
 public class TestInvalidUser {
 	
-	private User user1;
+	private User userSinPermisos;
 	private User userConPermisos;
 	private List<Object> userRoles;
+	private SystemManager sys;
 	
 	@BeforeEach
 	private void init() {
-		user1 = new User("001", "Guillermo", "Huouin", "Tokyo", userRoles);
+		userSinPermisos = new User("001", "Guillermo", "Huouin", "Tokyo", userRoles);
 		userConPermisos = new User("032", "Julio", "Mega", "Kyoto", userRoles);
+		sys = new SystemManager(authDao, genericDao);
 	}
-	
-	@InjectMocks
-	private SystemManager sys;
 	
 	@Mock
 	private AuthDAO authDao;
@@ -51,83 +50,67 @@ public class TestInvalidUser {
 	@Test
 	public void invalidStartRemoteSystemTest() throws OperationNotSupportedException {
 		String remoteId= "064";
-		when(authDao.getAuthData(user1.getId())).thenReturn(user1);
-		when(genericDao.getSomeData(user1, "where id=" + remoteId)).thenThrow(new OperationNotSupportedException()); //SystemManagerException()); //OperationNotSupportedException
+		when(authDao.getAuthData(userSinPermisos.getId())).thenReturn(userSinPermisos);
+		when(genericDao.getSomeData(userSinPermisos, "where id=" + remoteId)).thenThrow(new OperationNotSupportedException()); //SystemManagerException()); //OperationNotSupportedException
 		
 		InOrder ordered = inOrder(authDao, genericDao);
 		
-		sys = new SystemManager(authDao, genericDao);
-		assertThrows(SystemManagerException.class, () -> { sys.startRemoteSystem(user1.getId(), remoteId); });
 		
-		verify(authDao, times(1)).getAuthData(user1.getId());
-		verify(genericDao, times(1)).getSomeData(user1, "where id=" + remoteId);
+		assertThrows(SystemManagerException.class, () -> { sys.startRemoteSystem(userSinPermisos.getId(), remoteId); });
 		
-		ordered.verify(authDao).getAuthData(user1.getId());
-		ordered.verify(genericDao).getSomeData(user1, "where id=" + remoteId);
+		verify(authDao, times(1)).getAuthData(userSinPermisos.getId());
+		verify(genericDao, times(1)).getSomeData(userSinPermisos, "where id=" + remoteId);
+		
+		ordered.verify(authDao).getAuthData(userSinPermisos.getId());
+		ordered.verify(genericDao).getSomeData(userSinPermisos, "where id=" + remoteId);
 	}
 	
 	@Test
 	public void invalidStopRemoteSystemTest() throws OperationNotSupportedException
 	{
 		String remoteId = "005";
-		when(authDao.getAuthData(user1.getId())).thenReturn(user1);
-		when(genericDao.getSomeData(user1, "where id=" + remoteId)).thenThrow(new OperationNotSupportedException());
+		when(authDao.getAuthData(userSinPermisos.getId())).thenReturn(userSinPermisos);
+		when(genericDao.getSomeData(userSinPermisos, "where id=" + remoteId)).thenThrow(new OperationNotSupportedException());
 		
 		InOrder ordered = inOrder(authDao, genericDao);
 		
-		sys = new SystemManager(authDao, genericDao);
-		assertThrows(SystemManagerException.class, () -> { sys.stopRemoteSystem(user1.getId(), remoteId); });
+		assertThrows(SystemManagerException.class, () -> { sys.stopRemoteSystem(userSinPermisos.getId(), remoteId); });
 		
-		verify(authDao, times(1)).getAuthData(user1.getId());
-		verify(genericDao, times(1)).getSomeData(user1, "where id=" + remoteId);
+		verify(authDao, times(1)).getAuthData(userSinPermisos.getId());
+		verify(genericDao, times(1)).getSomeData(userSinPermisos, "where id=" + remoteId);
 		
-		ordered.verify(authDao).getAuthData(user1.getId());
-		ordered.verify(genericDao).getSomeData(user1, "where id=" + remoteId);
+		ordered.verify(authDao).getAuthData(userSinPermisos.getId());
+		ordered.verify(genericDao).getSomeData(userSinPermisos, "where id=" + remoteId);
 	}
 	
 	@Test
 	public void addRemoteSystemTest() throws OperationNotSupportedException
 	{
 		String remote="Sevilla";
-		when(authDao.getAuthData(user1.getId())).thenReturn(user1);
-		when(genericDao.updateSomeData(user1, remote)).thenThrow(new OperationNotSupportedException());
+		when(authDao.getAuthData(userSinPermisos.getId())).thenReturn(userSinPermisos);
+		when(genericDao.updateSomeData(userSinPermisos, remote)).thenThrow(new OperationNotSupportedException());
 		
 		InOrder ordered = inOrder(authDao, genericDao);
 		
-		sys = new SystemManager(authDao, genericDao);
-		assertThrows(SystemManagerException.class, () -> { sys.addRemoteSystem(user1.getId(), remote); });
+		assertThrows(SystemManagerException.class, () -> { sys.addRemoteSystem(userSinPermisos.getId(), remote); });
 		
-		ordered.verify(authDao, times(1)).getAuthData(user1.getId());
-		ordered.verify(genericDao, times(1)).updateSomeData(user1, remote);
+		ordered.verify(authDao, times(1)).getAuthData(userSinPermisos.getId());
+		ordered.verify(genericDao, times(1)).updateSomeData(userSinPermisos, remote);
 		
 		//ordered.verify(authDao).getAuthData(user1.getId());
 		//ordered.verify(genericDao).updateSomeData(user1, remote);
-		
-		when(authDao.getAuthData(userConPermisos.getId())).thenReturn(userConPermisos);
-		when(genericDao.updateSomeData(userConPermisos, remote)).thenReturn(false);
-		
-		sys = new SystemManager(authDao, genericDao);
-		assertThrows(SystemManagerException.class, () -> { sys.addRemoteSystem(userConPermisos.getId(), remote); });
-		
-		ordered.verify(authDao, times(1)).getAuthData(userConPermisos.getId());
-		ordered.verify(genericDao, times(1)).updateSomeData(userConPermisos, remote);
-		
-		//ordered.verify(authDao).getAuthData(userConPermisos.getId());
-		//ordered.verify(genericDao).updateSomeData(userConPermisos, remote);
 	}
 	
 	@Test
 	public void deleteRemoteSystemTest() throws OperationNotSupportedException
 	{
 		String remoteId = "016";
-		lenient().when(genericDao.deleteSomeData(user1, remoteId)).thenThrow(new OperationNotSupportedException());
+		lenient().when(genericDao.deleteSomeData(userSinPermisos, remoteId)).thenThrow(new OperationNotSupportedException());
 		
-		sys = new SystemManager(authDao,genericDao);
-		assertThrows(SystemManagerException.class, () -> { sys.deleteRemoteSystem(user1.getId(), remoteId);});
+		assertThrows(SystemManagerException.class, () -> { sys.deleteRemoteSystem(userSinPermisos.getId(), remoteId);});
 		
 		lenient().when(genericDao.deleteSomeData(userConPermisos, remoteId)).thenReturn(false);
 		
-		sys = new SystemManager(authDao,genericDao);
 		assertThrows(SystemManagerException.class, () -> { sys.deleteRemoteSystem(userConPermisos.getId(), remoteId);});
 	}
 }
