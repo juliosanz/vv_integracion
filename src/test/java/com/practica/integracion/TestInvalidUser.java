@@ -33,14 +33,12 @@ import java.lang.reflect.Field;
 public class TestInvalidUser {
 	
 	private User userSinPermisos;
-	private User userConPermisos;
 	private List<Object> userRoles;
 	private SystemManager sys;
 	
 	@BeforeEach
 	private void init() {
 		userSinPermisos = new User("001", "Guillermo", "Huouin", "Tokyo", userRoles);
-		userConPermisos = new User("032", "Julio", "Mega", "Kyoto", userRoles);
 		sys = new SystemManager(authDao, genericDao);
 	}
 	
@@ -58,17 +56,14 @@ public class TestInvalidUser {
 		
 		InOrder ordered = inOrder(authDao, genericDao);
 		
-		
 		SystemManagerException excepcion = assertThrows(SystemManagerException.class, () -> {
 			sys.startRemoteSystem(userSinPermisos.getId(), remoteId);
 		});
 		assertEquals(OperationNotSupportedException.class, excepcion.getCause().getClass());
 		
-		verify(authDao, times(1)).getAuthData(userSinPermisos.getId());
-		verify(genericDao, times(1)).getSomeData(userSinPermisos, "where id=" + remoteId);
+		ordered.verify(authDao, times(1)).getAuthData(userSinPermisos.getId());
+		ordered.verify(genericDao, times(1)).getSomeData(userSinPermisos, "where id=" + remoteId);
 		
-		ordered.verify(authDao).getAuthData(userSinPermisos.getId());
-		ordered.verify(genericDao).getSomeData(userSinPermisos, "where id=" + remoteId);
 	}
 	
 	@Test
@@ -85,11 +80,9 @@ public class TestInvalidUser {
 		});
 		assertEquals(OperationNotSupportedException.class, excepcion.getCause().getClass());
 		
-		verify(authDao, times(1)).getAuthData(userSinPermisos.getId());
-		verify(genericDao, times(1)).getSomeData(userSinPermisos, "where id=" + remoteId);
+		ordered.verify(authDao, times(1)).getAuthData(userSinPermisos.getId());
+		ordered.verify(genericDao, times(1)).getSomeData(userSinPermisos, "where id=" + remoteId);
 		
-		ordered.verify(authDao).getAuthData(userSinPermisos.getId());
-		ordered.verify(genericDao).getSomeData(userSinPermisos, "where id=" + remoteId);
 	}
 	
 	@Test
@@ -109,8 +102,6 @@ public class TestInvalidUser {
 		ordered.verify(authDao, times(1)).getAuthData(userSinPermisos.getId());
 		ordered.verify(genericDao, times(1)).updateSomeData(userSinPermisos, remote);
 		
-		//ordered.verify(authDao).getAuthData(user1.getId());
-		//ordered.verify(genericDao).updateSomeData(user1, remote);
 	}
 	
 	@Test
@@ -118,10 +109,12 @@ public class TestInvalidUser {
 	{
 		String remoteId = "016";
 		when(genericDao.deleteSomeData(Mockito.any(User.class), Mockito.anyString())).thenThrow(new OperationNotSupportedException());
+		
 		SystemManagerException excepcion = assertThrows(SystemManagerException.class, () -> {
 			sys.deleteRemoteSystem(userSinPermisos.getId(), remoteId);
 		});
 		assertEquals(OperationNotSupportedException.class, excepcion.getCause().getClass());
+		
 		verify(genericDao, times(1)).deleteSomeData(Mockito.any(User.class), Mockito.anyString());
 	}
 }
