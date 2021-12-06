@@ -1,5 +1,6 @@
 package com.practica.integracion;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
@@ -26,6 +27,7 @@ import com.practica.integracion.DAO.GenericDAO;
 import com.practica.integracion.DAO.User;
 import com.practica.integracion.manager.SystemManager;
 import com.practica.integracion.manager.SystemManagerException;
+import java.lang.reflect.Field;
 
 @ExtendWith(MockitoExtension.class)
 public class TestInvalidUser {
@@ -57,7 +59,10 @@ public class TestInvalidUser {
 		InOrder ordered = inOrder(authDao, genericDao);
 		
 		
-		assertThrows(SystemManagerException.class, () -> { sys.startRemoteSystem(userSinPermisos.getId(), remoteId); });
+		SystemManagerException excepcion = assertThrows(SystemManagerException.class, () -> {
+			sys.startRemoteSystem(userSinPermisos.getId(), remoteId);
+		});
+		assertEquals(OperationNotSupportedException.class, excepcion.getCause().getClass());
 		
 		verify(authDao, times(1)).getAuthData(userSinPermisos.getId());
 		verify(genericDao, times(1)).getSomeData(userSinPermisos, "where id=" + remoteId);
@@ -75,7 +80,10 @@ public class TestInvalidUser {
 		
 		InOrder ordered = inOrder(authDao, genericDao);
 		
-		assertThrows(SystemManagerException.class, () -> { sys.stopRemoteSystem(userSinPermisos.getId(), remoteId); });
+		SystemManagerException excepcion = assertThrows(SystemManagerException.class, () -> {
+			sys.stopRemoteSystem(userSinPermisos.getId(), remoteId);
+		});
+		assertEquals(OperationNotSupportedException.class, excepcion.getCause().getClass());
 		
 		verify(authDao, times(1)).getAuthData(userSinPermisos.getId());
 		verify(genericDao, times(1)).getSomeData(userSinPermisos, "where id=" + remoteId);
@@ -93,7 +101,10 @@ public class TestInvalidUser {
 		
 		InOrder ordered = inOrder(authDao, genericDao);
 		
-		assertThrows(SystemManagerException.class, () -> { sys.addRemoteSystem(userSinPermisos.getId(), remote); });
+		SystemManagerException excepcion = assertThrows(SystemManagerException.class, () -> {
+			sys.addRemoteSystem(userSinPermisos.getId(), remote);
+		});
+		assertEquals(OperationNotSupportedException.class, excepcion.getCause().getClass());
 		
 		ordered.verify(authDao, times(1)).getAuthData(userSinPermisos.getId());
 		ordered.verify(genericDao, times(1)).updateSomeData(userSinPermisos, remote);
@@ -106,11 +117,11 @@ public class TestInvalidUser {
 	public void deleteRemoteSystemTest() throws OperationNotSupportedException
 	{
 		String remoteId = "016";
-		
-		lenient().when(genericDao.deleteSomeData(Mockito.any(User.class), Mockito.anyString())).thenThrow(new OperationNotSupportedException());
-		assertThrows(SystemManagerException.class, () -> { sys.deleteRemoteSystem(userSinPermisos.getId(), remoteId);});
-		
-		lenient().when(genericDao.deleteSomeData(Mockito.any(User.class), Mockito.anyString())).thenReturn(false);
-		assertThrows(SystemManagerException.class, () -> { sys.deleteRemoteSystem(userConPermisos.getId(), remoteId);});
+		when(genericDao.deleteSomeData(Mockito.any(User.class), Mockito.anyString())).thenThrow(new OperationNotSupportedException());
+		SystemManagerException excepcion = assertThrows(SystemManagerException.class, () -> {
+			sys.deleteRemoteSystem(userSinPermisos.getId(), remoteId);
+		});
+		assertEquals(OperationNotSupportedException.class, excepcion.getCause().getClass());
+		verify(genericDao, times(1)).deleteSomeData(Mockito.any(User.class), Mockito.anyString());
 	}
 }
