@@ -2,13 +2,11 @@ package com.practica.integracion;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.inOrder;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.naming.OperationNotSupportedException;
@@ -17,7 +15,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,7 +24,6 @@ import com.practica.integracion.DAO.GenericDAO;
 import com.practica.integracion.DAO.User;
 import com.practica.integracion.manager.SystemManager;
 import com.practica.integracion.manager.SystemManagerException;
-import java.lang.reflect.Field;
 
 @ExtendWith(MockitoExtension.class)
 public class TestInvalidUser {
@@ -117,4 +113,42 @@ public class TestInvalidUser {
 		
 		verify(genericDao, times(1)).deleteSomeData(Mockito.any(User.class), Mockito.anyString());
 	}
+
+    @Test
+    public void testInvalidStartRemoteSystem() throws OperationNotSupportedException, SystemManagerException {
+
+      String remoteId = "095";
+      when(authDao.getAuthData(userSinPermisos.getId())).thenReturn(userSinPermisos);
+      when(genericDao.getSomeData(userSinPermisos, "where id=" + remoteId))
+          .thenThrow(new OperationNotSupportedException());
+
+      InOrder ordered = inOrder(authDao, genericDao);
+
+      SystemManagerException exception = assertThrows(SystemManagerException.class, () -> {
+        sys.startRemoteSystem(userSinPermisos.getId(), remoteId);
+      });
+      assertEquals(OperationNotSupportedException.class, exception.getCause().getClass());
+
+      ordered.verify(authDao).getAuthData(userSinPermisos.getId());
+      ordered.verify(genericDao).getSomeData(userSinPermisos, "where id=" + remoteId);
+    }
+
+    @Test
+    public void testInvalidStopRemoteSystem() throws OperationNotSupportedException, SystemManagerException {
+
+      String remoteId = "069";
+      when(authDao.getAuthData(userSinPermisos.getId())).thenReturn(userSinPermisos);
+      when(genericDao.getSomeData(userSinPermisos, "where id=" + remoteId))
+          .thenThrow(new OperationNotSupportedException());
+
+      InOrder ordered = inOrder(authDao, genericDao);
+
+      SystemManagerException exception = assertThrows(SystemManagerException.class, () -> {
+        sys.stopRemoteSystem(userSinPermisos.getId(), remoteId);
+      });
+      assertEquals(OperationNotSupportedException.class, exception.getCause().getClass());
+
+      ordered.verify(authDao).getAuthData(userSinPermisos.getId());
+      ordered.verify(genericDao).getSomeData(userSinPermisos, "where id=" + remoteId);
+    }
 }
