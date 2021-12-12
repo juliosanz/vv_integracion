@@ -59,4 +59,4 @@ Nota técnica: A diferencia de las declaraciones de las Suites, no se ha agregad
 - [X] Descargar el proyecto utilizando git clone desde el terminal o desde el IDE.
 - [X] Seguir las indicaciones del enunciado para añadir las dependencias necesarias para empezar a realizar las pruebas
 - [X] Modificar este fichero añadiendo el número de grupo correspondiente y las instrucciones para ejecutar la práctica
-- [ ] Asegurarse que el profesor tiene acceso al repo de git
+- [X] Asegurarse que el profesor tiene acceso al repo de git
